@@ -8,7 +8,7 @@ async function getAccessToken() {
 
 getAccessToken()
   .then((token) =>
-    fetch("https://api.mangadex.org/manga/status", {
+    fetch("https://api.mangaaz.org/manga/status", {
       headers: {
         Authorization: `Bearer ${token}`,
       },

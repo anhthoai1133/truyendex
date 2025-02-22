@@ -8,7 +8,7 @@ const defaultImage = "/images/truyendex-loading.jpg";
 
 export class MangaDexUtils {
   axiosInstance = axios.create({
-    baseURL: "https://api.mangadex.org",
+    baseURL: "https://api.mangaaz.org/",
     timeout: 10000,
   });
 
