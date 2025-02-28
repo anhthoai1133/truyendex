@@ -18,7 +18,7 @@ import { useSettingsContext } from "@/contexts/settings";
 import Pagination from "../Pagination";
 import MangaTile from "../manga-tile";
 
-export default function NewUpdates({
+export default function LastestChapters({
   title,
   groupId,
 }: {
@@ -80,12 +80,14 @@ export default function NewUpdates({
     <div className="Module Module-163" id="new-updates">
       <div className="ModuleContent">
         <div className="items">
-          <div className="relative">
-            <h1 className="my-0 mb-5 flex items-center gap-3 text-[20px] text-web-title">
-              <FaClock />
-              <span>{title ?? "Truyện mới cập nhật"}</span>
-            </h1>
-          </div>
+          {title && (
+            <div className="relative">
+              <h1 className="my-0 mb-5 flex items-center gap-3 text-[20px] text-web-title">
+                <FaClock />
+                <span>{title}</span>
+              </h1>
+            </div>
+          )}
           <DataLoader isLoading={isLoading} error={error}>
             <div className={`grid grid-cols-2 gap-[20px] lg:grid-cols-4`}>
               {Object.entries(updates).map(([mangaId, chapterList]) => {
