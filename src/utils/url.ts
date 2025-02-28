@@ -34,13 +34,4 @@ export class UrlUtils {
     if (!avatarPath) return "/nettruyen/images/default-avatar.jpg";
     return `${Constants.APP_IMAGE_URL}/${avatarPath}`;
   }
-
-  encodeBase64Url(url: string) {
-    return btoa(url).replace(/\+/g, "-").replace(/\//g, "_");
-  }
-
-  getProxyUrl(url: string) {
-    const encodedUrl = this.encodeBase64Url(url);
-    return `${Constants.CORS_URL}/v1/cors/${encodedUrl}`;
-  }
 }

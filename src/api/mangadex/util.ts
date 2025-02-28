@@ -21,7 +21,7 @@ import { ErrorResponse } from "../../types/mangadex";
  * CONSTANT DECLARATIONS
  ************************/
 
-const MANGADEX_API_URL = "https://api.mangaaz.org/";
+const MANGADEX_API_URL = "https://api.mangadex.org";
 const CORS = Constants.CORS_URL;
 const CORS_V2 = Constants.CORS_V2_URL;
 

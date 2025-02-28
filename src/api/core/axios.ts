@@ -5,8 +5,7 @@ import Axios from "axios";
 const axios = Axios.create({
   baseURL: Constants.BACKEND_URL,
   headers: {
-    "X-Requested-With": "XMLHttpRequest",
-    "Origin": Constants.APP_URL,
+    "X-Requested-With": "XMLHttpRequest", 
   },
   withCredentials: true,
   withXSRFToken: true,
@@ -14,18 +13,8 @@ const axios = Axios.create({
 
 axios.interceptors.request.use(
   (config) => {
-    // Get base URL
-    const baseUrl = Utils.Url.getBackendUrl();
-    
-    // Encode the URL if using CORS proxy
-    if (baseUrl.includes("services.f-ck.me")) {
-      const fullUrl = `${Constants.BACKEND_URL}${config.url}`;
-      config.url = Utils.Url.encodeBase64Url(fullUrl);
-      config.baseURL = `${Constants.CORS_URL}/v1/cors`;
-    } else {
-      config.baseURL = baseUrl;
-    }
-    
+    // Dynamically set the baseURL before each request
+    config.baseURL = Utils.Url.getBackendUrl();
     return config;
   },
   (error) => {
