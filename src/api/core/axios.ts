@@ -5,7 +5,7 @@ import Axios from "axios";
 const axios = Axios.create({
   baseURL: Constants.BACKEND_URL,
   headers: {
-    "X-Requested-With": "XMLHttpRequest",
+    "X-Requested-With": "XMLHttpRequest", 
   },
   withCredentials: true,
   withXSRFToken: true,
