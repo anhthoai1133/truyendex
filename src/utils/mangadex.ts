@@ -4,7 +4,7 @@ import { Chapter, ExtendManga, Relationship } from "@/types/mangadex";
 import axios from "axios";
 import { ReadonlyURLSearchParams } from "next/navigation";
 
-const defaultImage = "/images/truyendex-loading.jpg";
+const defaultImage = "https://picsum.photos/400/600?random=500";
 
 export class MangaDexUtils {
   axiosInstance = axios.create({

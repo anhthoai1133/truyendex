@@ -32,21 +32,7 @@ export default function LastChapterUpdatedTitles() {
   const { mangas, mangaStatistics, updateMangas, updateMangaStatistics } =
     useMangadex();
 
-  useEffect(() => {
-    if (data?.data && data.data.length > 0) {
-      updateMangas({
-        ids: data?.data.map((c) => c.uuid),
-      });
-    }
-  }, [data]);
-
-  useEffect(() => {
-    if (data?.data && data.data.length > 0) {
-      updateMangaStatistics({
-        manga: data?.data.map((c) => c.uuid),
-      });
-    }
-  }, [data]);
+  // No longer enrich via MangaDex; backend now returns coverImage/title
 
   useEffect(() => {
     if (!data?.total) return;
@@ -66,13 +52,8 @@ export default function LastChapterUpdatedTitles() {
                 ))
               : data?.data.map((series) => {
                   const mangaId = series.uuid;
-                  const coverArt = Utils.Mangadex.getCoverArt(
-                    mangas[mangaId],
-                    512,
-                  );
-                  const mangaTitle = Utils.Mangadex.getMangaTitle(
-                    mangas[mangaId],
-                  );
+                  const coverArt = (series as any).coverImage;
+                  const mangaTitle = series.title;
                   const readedChapters = history[mangaId];
                   return (
                     <MangaTile

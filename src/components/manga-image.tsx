@@ -63,7 +63,7 @@ export default function MangaImage({
       <LazyLoadImage
         wrapperClassName="block mx-auto"
         effect={disabledEffect ? undefined : effect}
-        placeholderSrc={"/images/truyendex-loading.jpg"}
+        placeholderSrc={"https://picsum.photos/400/600?random=501"}
         className="mx-auto h-full object-cover"
         width={maxImageWidth || "100%"}
         onLoad={() => setLoaded(true)}

@@ -2,17 +2,75 @@
 
 import Link from "next/link";
 
-import useReadingHistory from "@/hooks/useReadingHistory";
+import { useReadingHistory } from "@/hooks/core/useReadingHistory";
 
 import { FaHistory } from "react-icons/fa";
 import { AspectRatio } from "@/components/shadcn/aspect-ratio";
 import { Constants } from "@/constants";
-import { useMemo } from "react";
 
 export default function ReadingHistory() {
-  const { history } = useReadingHistory();
+  const {
+    data,
+    isLoading,
+    error,
+  } = useReadingHistory();
 
-  const historyEntries = useMemo(() => Object.entries(history), [history]);
+  const historyEntries = data?.data || [];
+
+  if (isLoading) {
+    return (
+      <div>
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="flex items-center gap-4 text-[20px] font-medium text-web-title">
+            <FaHistory />
+            Lịch sử đọc truyện
+          </h2>
+          <Link
+            className="text-web-title transition hover:text-web-titleLighter"
+            href={Constants.Routes.nettrom.history}
+          >
+            Xem tất cả
+          </Link>
+        </div>
+        <div className="grid grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="flex gap-3">
+              <div className="w-full shrink-0">
+                <AspectRatio
+                  ratio={Constants.Nettrom.MANGA_COVER_RATIO}
+                  className="shrink-0 overflow-hidden rounded"
+                >
+                  <div className="h-full w-full bg-gray-200 animate-pulse"></div>
+                </AspectRatio>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div>
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="flex items-center gap-4 text-[20px] font-medium text-web-title">
+            <FaHistory />
+            Lịch sử đọc truyện
+          </h2>
+          <Link
+            className="text-web-title transition hover:text-web-titleLighter"
+            href={Constants.Routes.nettrom.history}
+          >
+            Xem tất cả
+          </Link>
+        </div>
+        <div className="text-center text-red-500 py-4">
+          Không thể tải lịch sử đọc truyện
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -30,13 +88,13 @@ export default function ReadingHistory() {
           </Link>
         </div>
         <ul className="grid grid-cols-4 gap-4">
-          {historyEntries.slice(0, 4).map(([mangaId, manga]) => (
-            <li className="group" key={mangaId}>
+          {historyEntries.slice(0, 4).map((manga: any) => (
+            <li className="group" key={manga.mangaId}>
               <div className="flex gap-3">
                 <Link
                   className="block w-full shrink-0"
                   title={manga.mangaTitle}
-                  href={Constants.Routes.nettrom.manga(mangaId)}
+                  href={Constants.Routes.nettrom.manga(manga.mangaId)}
                 >
                   <AspectRatio
                     ratio={Constants.Nettrom.MANGA_COVER_RATIO}

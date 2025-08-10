@@ -1,10 +1,18 @@
 import { ReadListResponse } from "@/types";
 import { axios } from "./axios";
 
-export const getReadList = async (query: { page?: number } = {}) => {
-  const { data } = await axios<ReadListResponse>({
+export const getReadList = async () => {
+  const { data } = await axios({
+    method: "GET",
     url: "/api/user/read-list",
-    params: { ...query },
+  });
+  return data;
+};
+
+export const getReadingHistory = async () => {
+  const { data } = await axios({
+    method: "GET",
+    url: "/api/user/reading-history",
   });
   return data;
 };

@@ -25,8 +25,8 @@ export default function RecentComments() {
       </div>
 
       {isLoading
-        ? [...Array(15)].map((_, index) => <CommentSkeleton key={index} />)
-        : data?.comments.map((comment) => (
+        ? [...Array(15)]?.map((_, index) => <CommentSkeleton key={index} />)
+        : data?.comments?.map((comment) => (
             <Comment key={comment.id} comment={comment} />
           ))}
 

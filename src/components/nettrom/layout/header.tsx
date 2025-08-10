@@ -154,6 +154,17 @@ function AuthDropdown({ desktop }: { desktop?: boolean }) {
                     Truyện theo dõi
                   </Link>
                 </MenuItem>
+                {user?.display_roles?.includes(Constants.Roles.ADMIN) && (
+                  <MenuItem>
+                    <Link
+                      className={menuItemClassName}
+                      href={Constants.Routes.admin.index}
+                    >
+                      <FaCog />
+                      Admin Panel
+                    </Link>
+                  </MenuItem>
+                )}
               </>
             ) : (
               <>

@@ -1,9 +1,24 @@
+"use client";
 import Link from "next/link";
 import { chunk } from "lodash";
 import { Utils } from "@/utils";
 import { Constants } from "@/constants";
+import { useEffect, useState } from "react";
+import { axios } from "@/api/core/axios";
 
 export default function MainNav() {
+  const [tagsData, setTagsData] = useState<Array<{ id: string; name: string; description: string }>>([]);
+  useEffect(() => {
+    let mounted = true;
+    axios({ method: "GET", url: "/api/series/tags" })
+      .then((res) => {
+        if (mounted) setTagsData(res.data?.data || []);
+      })
+      .catch(() => {});
+    return () => {
+      mounted = false;
+    };
+  }, []);
   return (
     <div className="Module Module-144">
       <div className="ModuleContent">
@@ -62,8 +77,14 @@ export default function MainNav() {
             <ul className="dropdown-menu megamenu">
               <li>
                 <div className="clearfix">
-                  {chunk(Constants.Nettrom.tags, 13).map((col) => (
-                    <div className="col-sm-3" key={col[0].id}>
+                  {chunk((tagsData || []).map((t) => ({
+                    id: t.id,
+                    attributes: {
+                      name: { vi: t.name },
+                      description: { vi: t.description },
+                    }
+                  })), 13).map((col, idx) => (
+                    <div className="col-sm-3" key={col[0]?.id || idx}>
                       <ul className="nav">
                         {col.map((tag) => (
                           <li key={tag.id}>

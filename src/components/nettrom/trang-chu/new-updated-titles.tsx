@@ -4,15 +4,14 @@ import { useEffect, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useRouter } from "nextjs-toploader/app";
 
-import { useLastUpdates } from "@/hooks/mangadex";
+import { useLatestChapters } from "@/hooks/core/useLatestChapters";
 import { useMangadex } from "@/contexts/mangadex";
 
-import { ExtendChapter } from "@/types/mangadex";
 import { Constants } from "@/constants";
 import { FaClock } from "react-icons/fa";
 import { DataLoader } from "@/components/DataLoader";
 import { Utils } from "@/utils";
-import useReadingHistory from "@/hooks/useReadingHistory";
+import { useReadingHistory } from "@/hooks/core/useReadingHistory";
 import { useSettingsContext } from "@/contexts/settings";
 
 import Pagination from "../Pagination";
@@ -30,23 +29,17 @@ export default function LastestChapters({
   const params = useSearchParams();
   const page = Number(params.get("page")) || 0;
   const [totalPage, setTotalPage] = useState(0);
-  const { history } = useReadingHistory();
+  const { data: historyData } = useReadingHistory();
   const { filteredLanguages, filteredContent, originLanguages } =
     useSettingsContext();
-  const { chapters, isLoading, error, total } = useLastUpdates({
-    page,
-    groupId,
-    filteredLanguages,
-    filteredContentRating: filteredContent,
-    originLanguages,
-  });
+  const { data, isLoading, error } = useLatestChapters(50, page);
   const { mangas, mangaStatistics, updateMangas, updateMangaStatistics } =
     useMangadex();
-  const updates: Record<string, ExtendChapter[]> = {};
+  const updates: Record<string, any[]> = {};
 
-  if (chapters) {
-    for (const chapter of chapters) {
-      const mangaId = chapter.manga?.id;
+  if (data?.data) {
+    for (const chapter of data.data) {
+      const mangaId = chapter.series?.id;
       if (!mangaId) continue;
       if (!updates[mangaId]) {
         updates[mangaId] = [];
@@ -56,25 +49,27 @@ export default function LastestChapters({
   }
 
   useEffect(() => {
-    if (chapters?.length > 0) {
+    if (data?.data?.length > 0) {
       updateMangas({
-        ids: chapters.filter((c) => !!c?.manga?.id).map((c) => c.manga!.id),
+        ids: data.data.filter((c: any) => !!c?.series?.id).map((c: any) => c.series.id),
       });
     }
-  }, [chapters]);
+  }, [data]);
 
   useEffect(() => {
-    if (chapters?.length > 0) {
+    if (data?.data?.length > 0) {
       updateMangaStatistics({
-        manga: chapters.filter((c) => !!c?.manga?.id).map((c) => c.manga!.id!),
+        manga: data.data.filter((c: any) => !!c?.series?.id).map((c: any) => c.series.id),
       });
     }
-  }, [chapters]);
+  }, [data]);
 
   useEffect(() => {
-    if (!total) return;
-    setTotalPage(Math.floor(total / Constants.Mangadex.LAST_UPDATES_LIMIT));
-  }, [total]);
+    if (!data?.total) return;
+    setTotalPage(Math.floor(data.total / 50));
+  }, [data]);
+
+  const history = historyData?.data || [];
 
   return (
     <div className="Module Module-163" id="new-updates">
@@ -95,7 +90,7 @@ export default function LastestChapters({
                 const mangaTitle = Utils.Mangadex.getMangaTitle(
                   mangas[mangaId],
                 );
-                const readedChapters = history[mangaId];
+                const readedChapters = history.find((h: any) => h.mangaId === mangaId);
                 return (
                   <MangaTile
                     id={mangaId}
@@ -104,9 +99,9 @@ export default function LastestChapters({
                     title={mangaTitle}
                     chapters={chapterList.slice(0, 3).map((chapter) => ({
                       id: chapter.id,
-                      title: Utils.Mangadex.getChapterTitle(chapter),
+                      title: chapter.title,
                       subTitle: Utils.Date.formatNowDistance(
-                        new Date(chapter.attributes.readableAt),
+                        new Date(chapter.updatedAt),
                       ),
                     }))}
                     readedChapters={readedChapters}

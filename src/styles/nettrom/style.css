@@ -6140,7 +6140,7 @@ p {
 
 .reading .reading-detail .page-chapter {
   position: relative;
-  background: url("/images/truyendex-loading.jpg") center center no-repeat;
+  background: url("https://picsum.photos/400/600?random=502") center center no-repeat;
   text-align: center;
 }
 

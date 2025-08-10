@@ -32,7 +32,7 @@ export default function FollowingList() {
 
   useEffect(() => {
     if (!data) return;
-    const ids = data.data.map((d) => d.series_uuid);
+    const ids = data.data.map((d: any) => d.series_uuid);
     updateMangas({ ids, includes: [MangadexApi.Static.Includes.COVER_ART] });
     updateMangaStatistics({ manga: ids });
   }, [data, updateMangaStatistics, updateMangas]);
@@ -54,7 +54,7 @@ export default function FollowingList() {
                   title,
                   chapter_updated_at,
                   chapter_title,
-                }) => {
+                }: any) => {
                   const manga = mangas[series_uuid];
 
                   return (

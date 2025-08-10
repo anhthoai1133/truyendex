@@ -37,3 +37,33 @@ export const getHomepageSeries = async (params: {
   });
   return data;
 };
+
+export const getFeaturedSeries = async () => {
+  const { data } = await axios({
+    method: "GET",
+    url: "/api/series/featured",
+  });
+  return data;
+};
+
+export const getTopSeries = async (
+  type: 'follows' | 'rating' | 'new' = 'follows',
+  limit: number = 7,
+  range?: 'day' | 'week' | 'month',
+) => {
+  const { data } = await axios({
+    method: "GET",
+    url: "/api/series/top",
+    params: { type, limit, range },
+  });
+  return data;
+};
+
+export const getLatestChapters = async (limit: number = 50, page: number = 0) => {
+  const { data } = await axios({
+    method: "GET",
+    url: "/api/series/latest-chapters",
+    params: { limit, page },
+  });
+  return data;
+};

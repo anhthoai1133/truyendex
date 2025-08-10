@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useForm, SubmitHandler } from "react-hook-form";
+import { useEffect } from "react";
 import * as yup from "yup";
 
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -38,12 +39,31 @@ const loginSchema = yup.object().shape({
 
 export default function LoginForm() {
   const searchParams = useSearchParams();
+  const router = useRouter();
 
-  const { login } = useAuth({
+  const { login, mutate } = useAuth({
     middleware: "guest",
     redirectIfAuthenticated:
       searchParams.get("redirectUrl") || Constants.Routes.nettrom.index,
   });
+
+  // Xử lý token từ Google OAuth callback
+  useEffect(() => {
+    const token = searchParams.get("token");
+    const success = searchParams.get("success");
+    
+    if (token && success === "logged_in") {
+      // Lưu token vào cookie (backend sẽ set cookie, nhưng frontend cũng cần lưu)
+      document.cookie = `token=${token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+      
+      // Refresh user data
+      mutate();
+      
+      // Redirect sau khi xử lý token
+      const redirectUrl = searchParams.get("redirectUrl") || Constants.Routes.nettrom.index;
+      router.push(redirectUrl);
+    }
+  }, [searchParams, mutate, router]);
 
   const {
     register,

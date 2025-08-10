@@ -3,10 +3,9 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { useLastUpdates } from "@/hooks/mangadex";
+import { useLatestChapters } from "@/hooks/core/useLatestChapters";
 import { useMangadex } from "@/contexts/mangadex";
 import Loading from "@/components/nettrom/layout/loading";
-import { ExtendChapter } from "@/types/mangadex";
 import { Utils } from "@/utils";
 import { Constants } from "@/constants";
 import Pagination from "../Pagination";
@@ -19,17 +18,14 @@ export default function NewUpdates({
   groupId?: string;
 }) {
   const [page, setPage] = useState(0);
-  const { chapters, isLoading, error, total } = useLastUpdates({
-    page,
-    groupId,
-  });
+  const { data, isLoading, error } = useLatestChapters(50, page);
   const { mangas, updateMangas, updateMangaStatistics, mangaStatistics } =
     useMangadex();
-  const updates: Record<string, ExtendChapter[]> = {};
+  const updates: Record<string, any[]> = {};
 
-  if (chapters) {
-    for (const chapter of chapters) {
-      const mangaId = chapter.manga?.id;
+  if (data?.data) {
+    for (const chapter of data.data) {
+      const mangaId = chapter.series?.id;
       if (!mangaId) continue;
       if (!updates[mangaId]) {
         updates[mangaId] = [];
@@ -39,20 +35,20 @@ export default function NewUpdates({
   }
 
   useEffect(() => {
-    if (chapters?.length > 0) {
+    if (data?.data?.length > 0) {
       updateMangas({
-        ids: chapters.filter((c) => !!c?.manga?.id).map((c) => c.manga!.id),
+        ids: data.data.filter((c: any) => !!c?.series?.id).map((c: any) => c.series.id),
       });
     }
-  }, [chapters]);
+  }, [data]);
 
   useEffect(() => {
-    if (chapters?.length > 0) {
+    if (data?.data?.length > 0) {
       updateMangaStatistics({
-        manga: chapters.filter((c) => !!c?.manga?.id).map((c) => c.manga!.id!),
+        manga: data.data.filter((c: any) => !!c?.series?.id).map((c: any) => c.series.id),
       });
     }
-  }, [chapters]);
+  }, [data]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -137,14 +133,14 @@ export default function NewUpdates({
                               href={Constants.Routes.nettrom.chapter(
                                 chapter.id,
                               )}
-                              title={Utils.Mangadex.getChapterTitle(chapter)}
+                              title={chapter.title}
                               className="flex-grow overflow-hidden text-ellipsis whitespace-nowrap text-[13px] !text-white"
                             >
-                              {Utils.Mangadex.getChapterTitle(chapter)}
+                              {chapter.title}
                             </Link>
                             <i className="whitespace-nowrap text-[11px] italic leading-[13px] text-[#999]">
                               {Utils.Date.formatNowDistance(
-                                new Date(chapter.attributes.readableAt),
+                                new Date(chapter.updatedAt),
                               )}
                             </i>
                           </li>
@@ -161,7 +157,7 @@ export default function NewUpdates({
           onPageChange={(event) => {
             setPage(event.selected);
           }}
-          pageCount={Math.floor(total / Constants.Mangadex.LAST_UPDATES_LIMIT)}
+          pageCount={Math.floor((data?.total || 0) / 50)}
           forcePage={page}
         />
       </div>

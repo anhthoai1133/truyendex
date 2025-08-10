@@ -3,6 +3,7 @@ import "@/styles/core/index.scss";
 
 import { Metadata } from "next";
 import NextTopLoader from "nextjs-toploader";
+import ToastProvider from "@/components/toast-provider";
 
 import { Constants } from "@/constants";
 
@@ -54,6 +55,7 @@ export default function CoreLayout({
   <div class="spinner text-indigo-500" role="spinner"><div class="spinner-icon"></div></div>`}
       />
       <main>{children}</main>
+      <ToastProvider />
     </LayoutWrapper>
   );
 }
