@@ -1,142 +1,276 @@
 "use client";
 
-import { useState } from "react";
-import { useTopSeries } from "@/hooks/core/useTopSeries";
-import Iconify from "@/components/iconify";
-import { Button } from "@/components/nettrom/Button";
-import MangaTile from "@/components/nettrom/manga-tile";
+import Link from "next/link";
+import { useEffect, useMemo } from "react";
+import { twMerge } from "tailwind-merge";
+import Skeleton from "react-loading-skeleton";
 
-export default function TopTitles({ groupId }: { groupId?: string }) {
-  const [activeTab, setActiveTab] = useState<'top' | 'favorite' | 'new'>('top');
-  const [range, setRange] = useState<'day' | 'week' | 'month'>('month');
-  
-  const {
-    data: topData,
-    isLoading: topLoading,
-    error: topError,
-  } = useTopSeries('follows', 7, range);
+import { FaClock, FaHeart, FaStar, FaTrophy } from "react-icons/fa";
+import { AspectRatio } from "@/components/shadcn/aspect-ratio";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/shadcn/tabs";
+import { Utils } from "@/utils";
+import { Constants } from "@/constants";
+import { ErrorDisplay } from "../error-display";
+import { useTopSeries, BackendSeries } from "@/hooks/core/useTopSeries";
 
-  const {
-    data: favoriteData,
-    isLoading: favoriteLoading,
-    error: favoriteError,
-  } = useTopSeries('rating', 7, range);
-
-  const {
-    data: newData,
-    isLoading: newLoading,
-    error: newError,
-  } = useTopSeries('new', 7, range);
-
-  const getCurrentData = () => {
-    switch (activeTab) {
-      case 'top':
-        return { data: topData, isLoading: topLoading, error: topError };
-      case 'favorite':
-        return { data: favoriteData, isLoading: favoriteLoading, error: favoriteError };
-      case 'new':
-        return { data: newData, isLoading: newLoading, error: newError };
-      default:
-        return { data: topData, isLoading: topLoading, error: topError };
-    }
-  };
-
-  const { data, isLoading, error } = getCurrentData();
-  const topMangaList = data?.data || [];
+const MangaTile = (props: {
+  series: BackendSeries;
+  title: string;
+  order: number;
+  hideCounter?: boolean;
+  counter?: number;
+  icon?: React.ReactNode;
+}) => {
+  const inTop3 = useMemo(() => {
+    return props.order < 3;
+  }, [props.order]);
 
   return (
-    <div className="bg-white rounded-lg p-4 shadow-sm">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold">Bảng xếp hạng</h3>
-        <div className="flex gap-1">
-          <Button
-            variant={activeTab === 'top' ? 'default' : 'secondary'}
-            size="sm"
-            onClick={() => setActiveTab('top')}
-          >
-            Top
-          </Button>
-          <Button
-            variant={activeTab === 'favorite' ? 'default' : 'secondary'}
-            size="sm"
-            onClick={() => setActiveTab('favorite')}
-          >
-            Yêu thích
-          </Button>
-          <Button
-            variant={activeTab === 'new' ? 'default' : 'secondary'}
-            size="sm"
-            onClick={() => setActiveTab('new')}
-          >
-            Mới
-          </Button>
-        </div>
-        <div className="flex gap-1">
-          <Button variant={range === 'day' ? 'default' : 'secondary'} size="sm" onClick={() => setRange('day')}>Ngày</Button>
-          <Button variant={range === 'week' ? 'default' : 'secondary'} size="sm" onClick={() => setRange('week')}>Tuần</Button>
-          <Button variant={range === 'month' ? 'default' : 'secondary'} size="sm" onClick={() => setRange('month')}>Tháng</Button>
+    <li className="relative flex w-full gap-[8px] py-2" key={props.series.uuid}>
+      <div className="absolute left-4 top-0 flex h-[64px] w-8 items-center justify-center text-right">
+        <span
+          className={twMerge(
+            `fn-order text-[64px] font-black leading-none text-muted-foreground/30 pos${props.order + 1}`,
+            inTop3 && "text-muted-foreground",
+          )}
+        >
+          {props.order + 1}
+        </span>
+      </div>
+      <div className="flex grow items-start gap-4 pl-12">
+        <Link
+          className="relative w-[64px] shrink-0 rounded shadow-[-5px_0_20px_rgba(0,0,0,0.5)]"
+          title={props.title}
+          href={Constants.Routes.nettrom.manga(props.series.uuid)}
+        >
+          <AspectRatio ratio={1} className="overflow-hidden rounded">
+            <img
+              className="lazy h-full w-full object-cover"
+              src={props.series.coverImage || '/images/placeholder.jpg'}
+              alt={props.title}
+            />
+          </AspectRatio>
+        </Link>
+        <div className="grow">
+          <h3>
+            <Link
+              href={Constants.Routes.nettrom.manga(props.series.uuid)}
+              className="line-clamp-2 font-semibold !text-white transition hover:no-underline"
+            >
+              {props.title}
+            </Link>
+          </h3>
+          {!props.hideCounter && (
+            <span className="mt-1 flex shrink-0 items-center gap-2 text-muted-foreground">
+              {props.icon}
+              {Utils.Number.formatViews(props.counter || 0)}
+            </span>
+          )}
         </div>
       </div>
+    </li>
+  );
+};
 
-      {isLoading ? (
-        <div className="space-y-3">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="flex items-center gap-3">
-              <div className="w-12 h-16 bg-gray-200 rounded animate-pulse"></div>
-              <div className="flex-1 space-y-2">
-                <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-                <div className="h-3 bg-gray-200 rounded w-2/3 animate-pulse"></div>
-              </div>
+const MangaTileSkeleton = (props: {
+  order: number;
+  hideCounter?: boolean;
+  icon?: React.ReactNode;
+  counter?: number;
+}) => {
+  const inTop3 = useMemo(() => {
+    return props.order < 3;
+  }, [props.order]);
+
+  return (
+    <li className="relative flex w-full gap-[8px] py-2" key={props.order}>
+      <div className="absolute left-4 top-0 flex h-[64px] w-8 items-center justify-center text-right">
+        <span
+          className={twMerge(
+            `fn-order text-[64px] font-black leading-none text-muted-foreground/30 pos${props.order + 1}`,
+            inTop3 && "text-muted-foreground",
+          )}
+        >
+          {props.order + 1}
+        </span>
+      </div>
+      <div className="flex grow items-start gap-4 pl-12">
+        <div className="relative w-[64px] shrink-0 rounded shadow-[-5px_0_20px_rgba(0,0,0,0.5)]">
+          <AspectRatio ratio={1} className="overflow-hidden rounded">
+            <div className="h-full w-full">
+              <Skeleton height="100%" width="100%" />
             </div>
-          ))}
+          </AspectRatio>
         </div>
-      ) : error ? (
-        <div className="text-center text-red-500 py-4">
-          Không thể tải dữ liệu
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {topMangaList.map((manga: any, index: number) => (
-            <div key={manga.id} className="flex items-center gap-3">
-              <div className="w-12 h-16 relative">
-                <img
-                  src={manga.coverImage}
-                  alt={manga.title}
-                  className="w-full h-full object-cover rounded"
-                />
-                <div className="absolute -top-1 -left-1 w-6 h-6 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
-                  {index + 1}
-                </div>
-              </div>
-              <div className="flex-1 min-w-0">
-                <h4 className="font-medium text-sm line-clamp-2 mb-1">
-                  {manga.title}
-                </h4>
-                <div className="flex items-center gap-2 text-xs text-gray-500">
-                  {activeTab === 'top' && (
-                    <span className="flex items-center gap-1">
-                      <Iconify icon="mdi:heart" />
-                      {manga.followCount}
-                    </span>
-                  )}
-                  {activeTab === 'favorite' && (
-                    <span className="flex items-center gap-1">
-                      <Iconify icon="mdi:star" />
-                      {manga.rating}
-                    </span>
-                  )}
-                  {activeTab === 'new' && (
-                    <span className="flex items-center gap-1">
-                      <Iconify icon="mdi:clock" />
-                      {new Date(manga.createdAt).toLocaleDateString('vi-VN')}
-                    </span>
-                  )}
-                </div>
-              </div>
+        <div className="grow">
+          <h3>
+            <div className="line-clamp-2 font-semibold !text-white transition hover:no-underline">
+              <Skeleton />
             </div>
-          ))}
+          </h3>
+          {!props.hideCounter && (
+            <span className="mt-1 flex shrink-0 items-center gap-2 text-muted-foreground">
+              {props.icon}
+              <Skeleton width={20} />
+            </span>
+          )}
         </div>
-      )}
+      </div>
+    </li>
+  );
+};
+
+// Helper function để get title từ backend data
+const getSeriesTitle = (series: BackendSeries): string => {
+  if (typeof series.title === 'string') return series.title;
+  return series.title.vi || series.title.en || Object.values(series.title)[0] || 'Unknown Title';
+};
+
+export default function TopTitles({ groupId }: { groupId?: string }) {
+  // Lấy dữ liệu từ backend thay vì MangaDx
+  const {
+    seriesList: topSeriesList,
+    isLoading: topSeriesLoading,
+    error: topSeriesError,
+  } = useTopSeries('follows', 7);
+
+  const {
+    seriesList: newSeriesList,
+    isLoading: newSeriesLoading,
+    error: newSeriesError,
+  } = useTopSeries('new', 7);
+
+  const {
+    seriesList: favoriteSeriesList,
+    isLoading: favoriteSeriesLoading,
+    error: favoriteSeriesError,
+  } = useTopSeries('rating', 7);
+
+  return (
+    <div className="">
+      <div className="">
+        <div className="">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <h2 className="flex items-center gap-4 text-[20px] font-medium text-web-title">
+              <FaTrophy />
+              Bảng xếp hạng tháng này
+            </h2>
+          </div>
+          <Tabs defaultValue="top" className="w-full">
+            <TabsList className="mb-4 grid h-[48px] grid-cols-3 bg-white/10 p-2">
+              <TabsTrigger
+                value="top"
+                className="flex h-full items-center gap-3 rounded text-[12px]"
+              >
+                <FaStar />
+                Top
+              </TabsTrigger>
+              <TabsTrigger
+                value="favorite"
+                className="flex h-full items-center gap-3 rounded text-[12px]"
+              >
+                <FaHeart />
+                Yêu thích
+              </TabsTrigger>
+              <TabsTrigger
+                value="new"
+                className="flex h-full items-center gap-3 rounded text-[12px]"
+              >
+                <FaClock />
+                Mới
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="top">
+              <ul className="flex flex-col gap-4">
+                {topSeriesLoading
+                  ? [...Array(7)].map((_, index) => (
+                      <MangaTileSkeleton
+                        order={index}
+                        key={index}
+                        icon={<FaStar />}
+                      />
+                    ))
+                  : topSeriesList.map((series: BackendSeries, index: number) => {
+                      const title = getSeriesTitle(series);
+                      return (
+                        <MangaTile
+                          order={index}
+                          key={series.uuid}
+                          title={title}
+                          series={series}
+                          icon={<FaStar />}
+                          counter={series.followCount}
+                        />
+                      );
+                    })}
+                {topSeriesError && (
+                  <ErrorDisplay error={topSeriesError} />
+                )}
+              </ul>
+            </TabsContent>
+            <TabsContent value="favorite">
+              <ul className="flex flex-col gap-4">
+                {favoriteSeriesLoading
+                  ? [...Array(7)].map((_, index) => (
+                      <MangaTileSkeleton
+                        order={index}
+                        key={index}
+                        icon={<FaHeart />}
+                      />
+                    ))
+                  : favoriteSeriesList.map((series: BackendSeries, index: number) => {
+                      const title = getSeriesTitle(series);
+                      return (
+                        <MangaTile
+                          order={index}
+                          key={series.uuid}
+                          title={title}
+                          series={series}
+                          icon={<FaHeart />}
+                          counter={Math.round((series.rating || 0) * 10) / 10}
+                        />
+                      );
+                    })}
+                {favoriteSeriesError && (
+                  <ErrorDisplay error={favoriteSeriesError} />
+                )}
+              </ul>
+            </TabsContent>
+            <TabsContent value="new">
+              <ul className="flex flex-col gap-4">
+                {newSeriesLoading
+                  ? [...Array(7)].map((_, index) => (
+                      <MangaTileSkeleton
+                        order={index}
+                        key={index}
+                        icon={<FaClock />}
+                      />
+                    ))
+                  : newSeriesList.map((series: BackendSeries, index: number) => {
+                      const title = getSeriesTitle(series);
+                      return (
+                        <MangaTile
+                          order={index}
+                          key={series.uuid}
+                          title={title}
+                          series={series}
+                          hideCounter
+                        />
+                      );
+                    })}
+                {newSeriesError && (
+                  <ErrorDisplay error={newSeriesError} />
+                )}
+              </ul>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
     </div>
   );
 }
