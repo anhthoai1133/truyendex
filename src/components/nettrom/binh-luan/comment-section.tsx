@@ -169,9 +169,9 @@ export function CommentItem({
     [comment.id],
   );
 
-  const userBanned = comment.user.display_roles.includes(
+  const userBanned = comment.user.display_roles?.includes(
     Constants.Roles.BANNED,
-  );
+  ) || false;
 
   return (
     <div className="item clearfix pb-0" key={comment.id}>
@@ -199,9 +199,9 @@ export function CommentItem({
               >
                 {comment.user.name}
               </div>
-              {comment.user.display_roles.map((role) => (
-                <RoleBadge role={role} />
-              ))}
+              {comment.user.display_roles?.map((role) => (
+                <RoleBadge key={role} role={role} />
+              )) || []}
               {type === "series" &&
                 comment.commentable_type === "App\\Models\\Chapter" &&
                 comment.parent_id === 0 && (

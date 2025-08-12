@@ -67,3 +67,11 @@ export const getLatestChapters = async (limit: number = 50, page: number = 0) =>
   });
   return data;
 };
+
+export const getSeriesDetail = async (seriesUuid: string) => {
+  const { data } = await axios({
+    method: "GET",
+    url: `/api/series/${seriesUuid}`,
+  });
+  return data;
+};

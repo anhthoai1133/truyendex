@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import Link from "next/link";
 import { useRouter } from "nextjs-toploader/app";
@@ -277,25 +277,23 @@ export default function Manga({
                     <i className="fa fa-tags mr-2"></i> Thể loại
                   </p>
                   <p className="pl-10 lg:pl-0">
-                    {manga?.attributes.tags.map((tag, idx) => (
-                      <>
-                        <Link
-                          key={tag.id}
-                          href={`${Constants.Routes.nettrom.search}?includedTags=${tag.id}`}
-                          className="text-web-title transition hover:text-web-titleLighter"
-                        >
-                          {tag.attributes.name.en}
-                        </Link>
-                        {idx !== manga?.attributes.tags.length - 1 && (
-                          <span
-                            key={"divider_" + idx}
-                            className="text-muted-foreground"
-                          >
-                            ,{" "}
-                          </span>
-                        )}
-                      </>
-                    ))}
+                    {manga?.attributes.tags && manga.attributes.tags.length > 0 
+                      ? manga.attributes.tags.map((tag, idx) => (
+                          <React.Fragment key={tag.id || idx}>
+                            <Link
+                              href={`${Constants.Routes.nettrom.search}?includedTags=${tag.id}`}
+                              className="text-web-title transition hover:text-web-titleLighter"
+                            >
+                              {tag.attributes.name.en}
+                            </Link>
+                            {idx !== manga?.attributes.tags.length - 1 && (
+                              <span className="text-muted-foreground">
+                                ,{" "}
+                              </span>
+                            )}
+                          </React.Fragment>
+                        ))
+                      : <span className="text-muted-foreground">Chưa có thông tin</span>}
                   </p>
                 </li>
                 <li className="">

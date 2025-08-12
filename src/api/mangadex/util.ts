@@ -230,11 +230,14 @@ async function customFetch(url: string, options: RequestInit = {}) {
   const response = await fetch(url, options);
 
   if (!response.ok) {
-    let errorData;
+    let errorData: any = null;
     try {
-      errorData = await response.json();
+      // Clone before attempting to parse as JSON to avoid consuming the body twice
+      errorData = await response.clone().json();
     } catch {
-      errorData = await response.text();
+      try {
+        errorData = await response.text();
+      } catch {}
     }
     throw new MangaDexError({
       message: `Yêu cầu thất bại - Lỗi ${response.status}: ${response.statusText}`,
@@ -245,5 +248,6 @@ async function customFetch(url: string, options: RequestInit = {}) {
       },
     });
   }
-  return await response.json();
+  // Always parse from a cloned response to avoid edge cases with multiple consumers
+  return await response.clone().json();
 }

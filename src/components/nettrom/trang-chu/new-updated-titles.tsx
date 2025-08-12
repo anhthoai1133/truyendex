@@ -5,7 +5,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useRouter } from "nextjs-toploader/app";
 
 import { useLatestChapters } from "@/hooks/core/useLatestChapters";
-import { useMangadex } from "@/contexts/mangadex";
+// import { useMangadex } from "@/contexts/mangadex"; // Removed - using local backend
 
 import { Constants } from "@/constants";
 import { FaClock } from "react-icons/fa";
@@ -33,36 +33,36 @@ export default function LastestChapters({
   const { filteredLanguages, filteredContent, originLanguages } =
     useSettingsContext();
   const { data, isLoading, error } = useLatestChapters(50, page);
-  const { mangas, mangaStatistics, updateMangas, updateMangaStatistics } =
-    useMangadex();
-  const updates: Record<string, any[]> = {};
+  // const { mangas, mangaStatistics, updateMangas, updateMangaStatistics } =
+  //   useMangadex(); // Removed - using local backend
+  // const updates: Record<string, any[]> = {};
 
-  if (data?.data) {
-    for (const chapter of data.data) {
-      const mangaId = chapter.series?.id;
-      if (!mangaId) continue;
-      if (!updates[mangaId]) {
-        updates[mangaId] = [];
-      }
-      updates[mangaId].push(chapter);
-    }
-  }
+  // if (data?.data) {
+  //   for (const chapter of data.data) {
+  //     const mangaId = chapter.series?.id;
+  //     if (!mangaId) continue;
+  //     if (!updates[mangaId]) {
+  //       updates[mangaId] = [];
+  //     }
+  //     updates[mangaId].push(chapter);
+  //   }
+  // } // Removed - using direct backend data
 
-  useEffect(() => {
-    if (data?.data?.length > 0) {
-      updateMangas({
-        ids: data.data.filter((c: any) => !!c?.series?.id).map((c: any) => c.series.id),
-      });
-    }
-  }, [data]);
+  // useEffect(() => {
+  //   if (data?.data?.length > 0) {
+  //     updateMangas({
+  //       ids: data.data.filter((c: any) => !!c?.series?.id).map((c: any) => c.series.id),
+  //     });
+  //   }
+  // }, [data]); // Removed - using local backend
 
-  useEffect(() => {
-    if (data?.data?.length > 0) {
-      updateMangaStatistics({
-        manga: data.data.filter((c: any) => !!c?.series?.id).map((c: any) => c.series.id),
-      });
-    }
-  }, [data]);
+  // useEffect(() => {
+  //   if (data?.data?.length > 0) {
+  //     updateMangaStatistics({
+  //       manga: data.data.filter((c: any) => !!c?.series?.id).map((c: any) => c.series.id),
+  //     });
+  //   }
+  // }, [data]); // Removed - using local backend
 
   useEffect(() => {
     if (!data?.total) return;
@@ -85,27 +85,27 @@ export default function LastestChapters({
           )}
           <DataLoader isLoading={isLoading} error={error}>
             <div className={`grid grid-cols-2 gap-[20px] lg:grid-cols-4`}>
-              {Object.entries(updates).map(([mangaId, chapterList]) => {
-                const coverArt = Utils.Mangadex.getCoverArt(mangas[mangaId]);
-                const mangaTitle = Utils.Mangadex.getMangaTitle(
-                  mangas[mangaId],
-                );
-                const readedChapters = history.find((h: any) => h.mangaId === mangaId);
+              {data?.data?.slice(0, 12).map((chapter: any) => {
+                if (!chapter.series) return null;
+                
+                const series = chapter.series;
+                const seriesTitle = typeof series.title === 'string' 
+                  ? series.title 
+                  : series.title?.vi || series.title?.en || 'Untitled';
+                
                 return (
                   <MangaTile
-                    id={mangaId}
-                    key={mangaId}
-                    thumbnail={coverArt}
-                    title={mangaTitle}
-                    chapters={chapterList.slice(0, 3).map((chapter) => ({
+                    id={series.uuid}
+                    key={`${series.uuid}-${chapter.id}`}
+                    thumbnail={series.coverImage || '/images/placeholder.jpg'}
+                    title={seriesTitle}
+                    chapters={[{
                       id: chapter.id,
-                      title: chapter.title,
-                      subTitle: Utils.Date.formatNowDistance(
-                        new Date(chapter.updatedAt),
-                      ),
-                    }))}
-                    readedChapters={readedChapters}
-                    mangaStatistic={mangaStatistics[mangaId]}
+                      title: chapter.title || 'Chapter',
+                      subTitle: Utils.Date.formatNowDistance(chapter.updatedAt),
+                    }]}
+                    readedChapters={undefined}
+                    mangaStatistic={undefined}
                   />
                 );
               })}

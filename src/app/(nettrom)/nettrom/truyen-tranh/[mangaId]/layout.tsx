@@ -1,5 +1,5 @@
 import { Metadata, ResolvingMetadata } from "next";
-import { MangadexApi } from "@/api";
+import * as SeriesApi from "@/api/core/series";
 import { Utils } from "@/utils";
 import { Constants } from "@/constants";
 
@@ -16,16 +16,27 @@ export async function generateMetadata(
     width: 1200,
     height: 630,
   };
+  
   try {
-    // fetch data
-    const {
-      data: { data: manga },
-    } = await MangadexApi.Manga.getMangaId(id);
+    // Lấy data từ backend thay vì MangaDex
+    const backendSeries = await SeriesApi.getSeriesDetail(id);
+    
+    // Convert sang format tương thích
+    const manga = Utils.Manga.convertBackendSeriesToMangaFormat(backendSeries);
+    
+    // Get title từ backend data
+    const title = typeof manga.attributes.title === 'string' 
+      ? manga.attributes.title 
+      : manga.attributes.title?.vi || manga.attributes.title?.en || Object.values(manga.attributes.title || {})[0] || 'Unknown Title';
+    
+    // Get description từ backend data  
+    const description = typeof manga.attributes.description === 'string'
+      ? manga.attributes.description
+      : manga.attributes.description?.vi || manga.attributes.description?.en || Object.values(manga.attributes.description || {})[0] || '';
+
     return {
-      title: `${Utils.Mangadex.getMangaTitle(manga)} - Đọc ngay tại ${Constants.APP_NAME}`,
-      description: Utils.Mangadex.transLocalizedStr(
-        manga.attributes.description,
-      ),
+      title: `${title} - Đọc ngay tại ${Constants.APP_NAME}`,
+      description: description,
       openGraph: {
         images: [mdImage],
       },
@@ -33,8 +44,9 @@ export async function generateMetadata(
         images: [mdImage],
       },
     };
-  } catch {}
-  // optionally access and extend (rather than replace) parent metadata
+  } catch (error) {
+    console.error('Error generating metadata from backend:', error);
+  }
 
   return {
     title: "Đọc ngay tại NetTrom",
