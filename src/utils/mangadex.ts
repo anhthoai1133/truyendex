@@ -20,9 +20,9 @@ export class MangaDexUtils {
   getMangaTitle(manga: ExtendManga | null | undefined) {
     if (!manga) return "";
     return (
-      manga.attributes.altTitles.find((t) => t["vi"])?.["vi"] ||
-      manga.attributes.title?.["en"] ||
-      Object.values(manga.attributes.title)?.[0] ||
+      manga.attributes?.altTitles?.find((t) => t["vi"])?.["vi"] ||
+      manga.attributes?.title?.["en"] ||
+      Object.values(manga.attributes?.title)?.[0] ||
       "No title"
     );
   }
@@ -47,7 +47,7 @@ export class MangaDexUtils {
   }
 
   getChapterTitle(chapter: Chapter | null) {
-    if (!chapter) return "";
+    if (!chapter || !chapter.attributes) return "";
     if (chapter.attributes.title)
       return (
         (chapter.attributes.volume !== null
@@ -180,7 +180,7 @@ export class MangaDexUtils {
       const coverImage = (manga as any).coverImage;
       // Nếu đã là full URL, return luôn
       if (coverImage.startsWith('http')) {
-        return coverImage;
+        return `https://resizer.f-ck.me/?url=${coverImage}.${size}.jpg`;
       }
     }
     
@@ -188,14 +188,14 @@ export class MangaDexUtils {
     if (manga.cover_art?.attributes?.fileName) {
       const fileName = manga.cover_art.attributes.fileName;
       // Build MangaDx URL động
-      return `https://uploads.mangadx.org/covers/${manga.id}/${fileName}.${size}.jpg`;
+      return `https://resizer.f-ck.me/?url=https://mangadex.org/covers/${manga.id}/${fileName}.${size}.jpg`;
     }
     
     // 3. Fallback: Tìm trong relationships array
     const coverArtRelation = manga.relationships?.find(r => r.type === 'cover_art');
     if (coverArtRelation?.attributes?.fileName) {
       const fileName = coverArtRelation.attributes.fileName;
-      return `https://uploads.mangadx.org/covers/${manga.id}/${fileName}.${size}.jpg`;
+      return `https://resizer.f-ck.me/?url=https://mangadex.org/covers/${manga.id}/${fileName}.${size}.jpg`;
     }
     
     // 4. Default placeholder

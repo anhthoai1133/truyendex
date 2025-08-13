@@ -25,19 +25,29 @@ export const useAuth = ({
     daysUntilExpiration: 1,
   });
 
-  const { data: user, mutate } = useSWR("/api/user", async () => {
-    try {
-      const { data } = await axios.get<GetUserResponse>("/api/user");
-      if (data?.user) {
-        userIdValues.setState(data.user.id);
-      } else {
+  const { data: user, mutate } = useSWR(
+    // Tạm thời disable để tránh 401 error
+    null, // "/api/user", 
+    async () => {
+      try {
+        const { data } = await axios.get<GetUserResponse>("/api/user");
+        if (data?.user) {
+          userIdValues.setState(data.user.id);
+        } else {
+          userIdValues.resetState();
+        }
+        return data.user;
+      } catch (error) {
+        console.log("Auth error (expected):", error);
         userIdValues.resetState();
+        return null;
       }
-      return data.user;
-    } catch {}
-    userIdValues.resetState();
-    return null;
-  });
+    },
+    {
+      revalidateOnFocus: false,
+      shouldRetryOnError: false,
+    }
+  );
 
   const csrf = () => axios.get("/sanctum/csrf-cookie");
 

@@ -127,12 +127,15 @@ export const ChapterContextProvider = ({
   useEffect(() => {
     if (!chapter) return;
     const newPath = Constants.Routes.nettrom.chapter(chapter.id);
-    document.title = `Đọc ${Utils.Mangadex.getChapterTitle(chapter)} - ${Utils.Mangadex.getMangaTitle(manga)}`;
-    window.history.pushState(
-      { ...window.history.state, as: newPath, url: newPath },
-      "",
-      newPath,
-    );
+    // Tránh mismatch SSR bằng cách chỉ cập nhật title sau khi client mounted
+    if (typeof window !== 'undefined') {
+      document.title = `Đọc ${Utils.Mangadex.getChapterTitle(chapter)} - ${Utils.Mangadex.getMangaTitle(manga)}`;
+      window.history.pushState(
+        { ...window.history.state, as: newPath, url: newPath },
+        "",
+        newPath,
+      );
+    }
   }, [chapter?.id]);
 
   useEffect(() => {

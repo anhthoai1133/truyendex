@@ -62,6 +62,7 @@ export default function useChapterList(
               {
                 id: c.groups[0].uuid,
                 type: "scanlation_group",
+                related: "main_story" as const,
                 attributes: { name: c.groups[0].name },
               },
             ]

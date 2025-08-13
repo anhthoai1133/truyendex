@@ -18,7 +18,22 @@ export async function generateMetadata(
     const { data: chapter } = await axios({ method: 'GET', url: `/api/series/chapter/${id}` });
     const mangaTitle = chapter?.series?.title?.vi || chapter?.series?.title?.en || "";
     return {
-      title: `Đọc chương ${Utils.Mangadex.getChapterTitle(chapter)} - ${mangaTitle} tại ${Constants.APP_NAME}`,
+      title: `Đọc chương ${Utils.Mangadex.getChapterTitle({ 
+        attributes: { 
+          title: chapter?.title, 
+          volume: chapter?.volume, 
+          chapter: chapter?.chapterNo,
+          pages: 0,
+          translatedLanguage: 'vi',
+          uploader: null,
+          externalUrl: null,
+          publishAt: chapter?.publishAt || new Date().toISOString(),
+          readableAt: chapter?.readableAt || new Date().toISOString(),
+          createdAt: chapter?.createdAt || new Date().toISOString(),
+          updatedAt: chapter?.updatedAt || new Date().toISOString(),
+          version: 1
+        } 
+      } as any)} - ${mangaTitle} tại ${Constants.APP_NAME}`,
       openGraph: {},
       twitter: {},
     };

@@ -3,8 +3,9 @@ import { Constants } from "@/constants";
 import { Alert } from "../Alert";
 import { Button } from "../Button";
 import { FaCat, FaCog, FaGithub, FaSync } from "react-icons/fa";
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import { sample } from "lodash";
+import dynamic from "next/dynamic";
 
 const ALERTS = [
   <Alert
@@ -84,6 +85,12 @@ const ALERTS = [
   />,
 ];
 
-export default function RandomAlert() {
-  return useMemo(() => sample(ALERTS), []);
+function RandomAlertInner() {
+  const [node, setNode] = useState<JSX.Element | null>(null);
+  useEffect(() => {
+    setNode(sample(ALERTS) || null);
+  }, []);
+  return node;
 }
+
+export default dynamic(() => Promise.resolve(RandomAlertInner), { ssr: false });

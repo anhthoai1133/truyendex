@@ -111,7 +111,7 @@ function AuthDropdown({ desktop }: { desktop?: boolean }) {
   const { user, logout } = useAuth();
   const { onToggleDrawer } = useSettingsContext();
 
-  if (user === undefined) return null;
+  // if (user === undefined) return null;
   return (
     <Menu>
       <ul

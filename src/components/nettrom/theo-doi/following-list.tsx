@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
 import { useReadList } from "@/hooks/core";
-import { AppApi, MangadexApi } from "@/api";
+import { AppApi } from "@/api";
 import { useMangadex } from "@/contexts/mangadex";
 import Iconify from "@/components/iconify";
 import { Utils } from "@/utils";
@@ -33,7 +33,7 @@ export default function FollowingList() {
   useEffect(() => {
     if (!data) return;
     const ids = data.data.map((d: any) => d.series_uuid);
-    updateMangas({ ids, includes: [MangadexApi.Static.Includes.COVER_ART] });
+    updateMangas({ ids });
     updateMangaStatistics({ manga: ids });
   }, [data, updateMangaStatistics, updateMangas]);
 
