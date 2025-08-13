@@ -1,8 +1,8 @@
 import useSWR from "swr/immutable";
 import { useEffect, useState } from "react";
 
-import { MangadexApi } from "@/api";
 import { ScanlationGroupResponse } from "@/types/mangadex";
+import { axios } from "@/api/core/axios";
 
 export default function useScanlationGroup(groupId: string | null) {
   const [group, setGroup] = useState<ScanlationGroupResponse["data"] | null>(
@@ -10,13 +10,11 @@ export default function useScanlationGroup(groupId: string | null) {
   );
   const { data, isLoading, error } = useSWR(
     groupId ? ["scanlation_group", groupId] : null,
-    () =>
-      MangadexApi.Group.getGroupId(groupId!, {
-        includes: [
-          MangadexApi.Static.Includes.LEADER,
-          MangadexApi.Static.Includes.MEMBER,
-        ],
-      }),
+    async () => {
+      // We don't have a dedicated group endpoint; minimal info comes from chapter detail
+      const res = await axios({ method: "GET", url: `/api/groups/${groupId}` });
+      return res.data as ScanlationGroupResponse;
+    },
   );
 
   useEffect(() => {

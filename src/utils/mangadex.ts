@@ -174,9 +174,31 @@ export class MangaDexUtils {
 
   getCoverArt(manga: ExtendManga | undefined, size: 256 | 512 = 256) {
     if (!manga) return defaultImage;
-    if (manga.cover_art?.attributes) {
-      return `https://resizer.f-ck.me/?url=https://mangadex.org/covers/${manga.id}/${manga.cover_art.attributes.fileName}.${size}.jpg`;
+    
+    // 1. Ưu tiên backend coverImage (full URL từ backend API)
+    if ((manga as any).coverImage) {
+      const coverImage = (manga as any).coverImage;
+      // Nếu đã là full URL, return luôn
+      if (coverImage.startsWith('http')) {
+        return coverImage;
+      }
     }
+    
+    // 2. Fallback: MangaDx cover art từ relationships
+    if (manga.cover_art?.attributes?.fileName) {
+      const fileName = manga.cover_art.attributes.fileName;
+      // Build MangaDx URL động
+      return `https://uploads.mangadx.org/covers/${manga.id}/${fileName}.${size}.jpg`;
+    }
+    
+    // 3. Fallback: Tìm trong relationships array
+    const coverArtRelation = manga.relationships?.find(r => r.type === 'cover_art');
+    if (coverArtRelation?.attributes?.fileName) {
+      const fileName = coverArtRelation.attributes.fileName;
+      return `https://uploads.mangadx.org/covers/${manga.id}/${fileName}.${size}.jpg`;
+    }
+    
+    // 4. Default placeholder
     return defaultImage;
   }
 

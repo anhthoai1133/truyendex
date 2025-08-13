@@ -1,38 +1,38 @@
 import useSWR from "swr/immutable";
-import { MangadexApi } from "@/api";
 import { ChapterItem } from "@/types/mangadex";
+import { axios } from "@/api/core/axios";
 
-export default function useAggregate(
-  id: string | null,
-  options: MangadexApi.Manga.GetMangaIdAggregateRequestOptions,
-) {
-  const { data, isLoading, error } = useSWR(id ? [id, options] : null, () =>
-    MangadexApi.Manga.getMangaIdAggregate(id!, options),
+export default function useAggregate(id: string | null, _options: any) {
+  const { data, isLoading, error } = useSWR(
+    id ? [id, "aggregate"] : null,
+    async () => {
+      // Use new backend endpoint we added: series chapters listing
+      const res = await axios({
+        method: "GET",
+        url: `/api/series/${id}/chapters`,
+        params: { limit: 1000, page: 0 },
+      });
+      return res.data as {
+        data: Array<{ uuid: string; volume: string | null; chapterNo: string | null }>;
+      };
+    },
   );
-  const aggregate =
-    data && (data.data as MangadexApi.Manga.GetMangaIdAggregateResponse).volumes
-      ? (data.data as MangadexApi.Manga.GetMangaIdAggregateResponse).volumes
-      : null;
+
   let chapterList: ChapterItem[] = [];
-  if (aggregate) {
-    for (const volume of Object.values(aggregate)) {
-      for (const chapter of Object.values(volume.chapters)) {
-        chapterList.push({
-          volume: volume.volume,
-          chapter: chapter.chapter,
-          id: chapter.id,
-        });
-      }
-    }
-    chapterList = chapterList.sort((a, b) => {
-      if (a.volume === b.volume) {
-        return parseFloat(a.chapter) - parseFloat(b.chapter);
-      }
-      if (a.volume === "none") return 1;
-      if (b.volume === "none") return -1;
-      return parseFloat(a.volume) - parseFloat(b.volume);
-    });
+  if (data?.data) {
+    chapterList = data.data
+      .map((c) => ({
+        id: c.uuid,
+        volume: c.volume || "none",
+        chapter: c.chapterNo || "0",
+      }))
+      .sort((a, b) => {
+        if (a.volume === b.volume) return parseFloat(a.chapter) - parseFloat(b.chapter);
+        if (a.volume === "none") return 1;
+        if (b.volume === "none") return -1;
+        return parseFloat(a.volume) - parseFloat(b.volume);
+      });
   }
 
-  return { chapterList, aggregate, data, isLoading, error };
+  return { chapterList, aggregate: null, data, isLoading, error };
 }

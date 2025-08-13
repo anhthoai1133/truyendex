@@ -21,9 +21,10 @@ import { ErrorResponse } from "../../types/mangadex";
  * CONSTANT DECLARATIONS
  ************************/
 
+// Deprecated: we no longer proxy MangaDex via CORS. Keep constants for backward compatibility only.
 const MANGADEX_API_URL = "https://api.mangadex.org";
-const CORS = Constants.CORS_URL;
-const CORS_V2 = Constants.CORS_V2_URL;
+const CORS = "";
+const CORS_V2 = "";
 
 // process.env["NODE_TLS_REJECT_UNAUTHORIZED"] =
 //   process.env.NODE_ENV === "production" ? "1" : "0";
@@ -147,36 +148,12 @@ export const createHttpsRequestPromise = async function <T>(
     );
   }
 
-  if (CORS_V2) {
-    const data = await customFetch(`${CORS_V2}/mangadex${path}`);
-
-    return { data };
-  }
-
-  const encodedUrl = btoa(`${MANGADEX_API_URL}${path}`)
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_");
-
-  console.info("Request to API Mangadex: ", path, " -> ", encodedUrl);
-
-  const headers = new Headers();
-  headers.set("x-requested-with", "cubari");
-  const httpsRequestOptions: RequestInit = {
-    method: method,
-    headers,
-  };
-
-  // merge the options object if it was provided
-  if (options) {
-    Object.assign(httpsRequestOptions, options);
-  }
-
-  const data = await customFetch(
-    `${CORS}/v1/cors/${encodedUrl}`,
-    httpsRequestOptions,
-  );
-
-  return { data };
+  // Instead of calling MangaDex, throw to force callers to use backend
+  throw new MangaDexError({
+    message:
+      "MangaDex API calls are disabled. Please use backend endpoints instead.",
+    status: 400,
+  });
 };
 
 /**

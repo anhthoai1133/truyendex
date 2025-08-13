@@ -11,6 +11,8 @@ export class MangaUtils {
     return {
       id: backendSeries.uuid,
       type: 'manga',
+      // Thêm coverImage trực tiếp để getCoverArt() tìm thấy dễ dàng
+      coverImage: backendSeries.coverImage,
       attributes: {
         title: backendSeries.title,
         altTitles: [],

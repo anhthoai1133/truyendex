@@ -42,7 +42,6 @@ export default function Manga({
   const [page, setPage] = useState(0);
   const { data, chapters, error } = useChapterList(mangaId, {
     offset: page * Constants.Mangadex.CHAPTER_LIST_LIMIT,
-    translatedLanguage: filteredLanguages,
   });
   const chapterListData = useMemo(() => data?.data, [data]);
   const router = useRouter();
@@ -67,13 +66,7 @@ export default function Manga({
   }, [mutate, mangaId]);
 
   useEffect(() => {
-    updateMangas({
-      ids: [mangaId],
-      includes: [
-        MangadexApi.Static.Includes.ARTIST,
-        MangadexApi.Static.Includes.AUTHOR,
-      ],
-    });
+    updateMangas({ ids: [mangaId] });
     updateMangaStatistics({ manga: [mangaId] });
   }, [mangaId]);
 

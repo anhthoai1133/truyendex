@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Utils } from "@/utils";
 import { Constants } from "@/constants";
 import { DataLoader } from "@/components/DataLoader";
-import { ChapterList, ExtendChapter } from "@/types/mangadex";
+import { ExtendChapter } from "@/types/mangadex";
 import Pagination from "../Pagination";
 
 export default function ListChapter({
@@ -13,7 +13,7 @@ export default function ListChapter({
   mangaId: string;
   onPageChange?: (page: number) => void;
   page: number;
-  data?: ChapterList;
+  data?: any;
   items: ExtendChapter[];
 }) {
   return (
@@ -91,7 +91,7 @@ export default function ListChapter({
         <p className="mb-0 ml-auto py-4 text-muted-foreground">
           Đã hiển thị{" "}
           <span className="text-foreground">
-            {(props.data?.offset || 0) + (props.data?.data.length || 0)} /{" "}
+            {(props.data?.offset || 0) + (props.data?.data?.length || 0)} /{" "}
             {props.data?.total}
           </span>{" "}
           chương
